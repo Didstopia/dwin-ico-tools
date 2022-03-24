@@ -33,8 +33,6 @@ echo "NOTE: These files will overwrite existing files in the \"$(basename ${ICO_
 echo
 echo "When you are done, continue to rebuild them by pressing [Enter] ..."
 read -p ""
-#read -p ">>> Press [Enter] to begin rebuilding the .ICO files <<<"
-#echo
 
 echo "* Preparing to rebuild all extractacted .ICO files ..."
 DWIN_CUSTOM_FOLDER=$(realpath "./DWIN_SET_CUSTOM")
@@ -43,7 +41,6 @@ mkdir -p "${DWIN_CUSTOM_FOLDER}"
 cp -fr "${DWIN_FOLDER}"/ "${DWIN_CUSTOM_FOLDER}"
 rm -fr "${DWIN_CUSTOM_FOLDER}"/*.ICO
 
-## TODO: Copy all files at the root of "./icons_custom" to "./DWIN_SET_CUSTOM", ignoring folders
 if [ -d "${CUSTOM_DATA_FOLDER}" ]; then
   echo "  > Found custom assets, processing ..."
   for i in "${CUSTOM_DATA_FOLDER}"/*; do

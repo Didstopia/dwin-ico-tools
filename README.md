@@ -1,5 +1,21 @@
 # dwin-ico-tools
+
+**NOTICE**: _This is a fork of the original project, which simply aims to make the process of customizing your DWIN display easier._
+
 Tools to process DWIN LCD display .ICO files.
+
+## Usage (Fork Specific)
+
+- Ensure you have Python 3 installed
+- Ensure you have `pillow` Python dependency installed (`python3 -m pip install pillow`)
+- Run`icongen.sh` and closely follow the instructions
+
+In a nutshell, you must first copy a `DWIN_SET` folder to the root of the project folder.  
+The script will then create a directory called `DWIN_EXTRACTED`, where you can find the contents of all extracted `.ICO` files from the original firmware.  
+Once the script notifies you, you can make changes to the extracted files, then hit Enter to continue rebuilding the customized DWIN LCD display files.  
+
+Note that you can also create a folder called `CUSTOM_DATA`, where you can place any additional files you'd like to add to the resulting `DWIN_SET_CUSTOM` folder, including customizing the `.ICO` files themselves, instead of having to manually edit any of the extracted files.  
+Follow the script's instructions for more information on this procedure.  
 
 ## What
 
