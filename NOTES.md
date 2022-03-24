@@ -24,5 +24,7 @@ The information above was obtained with the following command, comparing the ori
 magick identify -verbose <path to image>
 ```
 
+TODO: Recreate the fork so it shows the original author's commit history
+TODO: Use [Pillow](https://pillow.readthedocs.io/en/latest/index.html) instead of ImageMagick to perform the image manipulation, if it can do everything we need it to do
 TODO: Add automatic conversion for _all_ images to match the above?
 TODO: Research/check other image properties that we could/should always set, to ensure maximum compatibility?
