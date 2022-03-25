@@ -20,12 +20,19 @@ echo "* Validating the environment ..."
 # Set up path variables
 CUSTOM_DATA_FOLDER=$(realpath "./CUSTOM_DATA")
 DWIN_FOLDER=$(realpath "./DWIN_SET")
-ICO_EXTRACTED_FOLDER=$(realpath "./DWIN_EXTRACTED")
+DWIN_EXTRACTED_FOLDER=$(realpath "./DWIN_EXTRACTED")
 DWIN_CUSTOM_FOLDER=$(realpath "./DWIN_SET_CUSTOM")
 
 # Validate that we have python3 installed
 if ! command -v python3 >/dev/null 2>&1; then
   echo "  > ERROR: Python 3 is not installed. Please install it and try again."
+  exit 1
+fi
+
+## TODO: Switch to using Python3 + Pillow instead of ImageMagick?
+# Validate that we have ImageMagick installed
+if ! command -v convert >/dev/null 2>&1; then
+  echo "  > ERROR: ImageMagick is not installed. Please install it and try again."
   exit 1
 fi
 
@@ -51,27 +58,27 @@ echo "  > Validation succeeded, continuing ..."
 echo
 
 echo "* Preparing to extract all files from available .ICO files ..."
-rm -fr ${ICO_EXTRACTED_FOLDER}
-mkdir -p ${ICO_EXTRACTED_FOLDER}
+rm -fr ${DWIN_EXTRACTED_FOLDER}
+mkdir -p ${DWIN_EXTRACTED_FOLDER}
 
 # Extract each .ICO file from the DWIN_SET folder
 for i in ${DWIN_FOLDER}/*.ICO; do
   [ -f "${i}" ] || break
   ICO_FILENAME=$(basename "${i}")
-  ICO_DESTINATION="${ICO_EXTRACTED_FOLDER}/${ICO_FILENAME%.*}"
+  ICO_DESTINATION="${DWIN_EXTRACTED_FOLDER}/${ICO_FILENAME%.*}"
   echo "  > Extracting ${ICO_FILENAME} ..."
   python3 splitIco.py "${i}" "${ICO_DESTINATION}" >/dev/null
 done
 echo
 
 if [ "${NO_PROMPT}" != "true" ]; then
-  echo "You can now make changes to the files in the \"$(basename ${ICO_EXTRACTED_FOLDER})\" folder."
+  echo "You can now make changes to the files in the \"$(basename ${DWIN_EXTRACTED_FOLDER})\" folder."
   echo "WARNING: This folder will be deleted once you press [Enter] and it has been processed!"
   echo
   echo "Additionally, you can create a new directory at the root of this project named \"CUSTOM_DATA\","
   echo "then copy your custom files there, eg. \"CUSTOM_DATA/0_start.jpg\" or \"CUSTOM_DATA/7/000-ICON_LOGO.jpg\","
   echo "after which all of these files will be baked in."
-  echo "NOTE: These files will overwrite existing files in the \"$(basename ${ICO_EXTRACTED_FOLDER})\" folder!"
+  echo "NOTE: These files will overwrite existing files in the \"$(basename ${DWIN_EXTRACTED_FOLDER})\" folder!"
   echo
   echo "When you are done, continue to rebuild them by pressing [Enter] ..."
   read -p ""
@@ -95,7 +102,7 @@ if [ -d "${CUSTOM_DATA_FOLDER}" ]; then
       echo "    > Processing custom asset: ${CUSTOM_ASSET} ..."
       cp -fr "${i}" "${DWIN_CUSTOM_FOLDER}/"
     elif [ -d "${i}" ]; then
-      if [ ! -d "${ICO_EXTRACTED_FOLDER}/${CUSTOM_ASSET}" ]; then
+      if [ ! -d "${DWIN_EXTRACTED_FOLDER}/${CUSTOM_ASSET}" ]; then
         echo
         echo "ERROR: Unsupported ICO asset: ${CUSTOM_ASSET}"
         exit 1
@@ -105,7 +112,7 @@ if [ -d "${CUSTOM_DATA_FOLDER}" ]; then
         if [ -f "${f}" ]; then
           CUSTOM_ICO=$(basename "${f}")
           echo "      > Processing custom ICO asset: ${CUSTOM_ASSET} -> ${CUSTOM_ICO} ..."
-          cp -fr "${f}" "${ICO_EXTRACTED_FOLDER}/${CUSTOM_ASSET}"/
+          cp -fr "${f}" "${DWIN_EXTRACTED_FOLDER}/${CUSTOM_ASSET}"/
         else
           echo
           echo "ERROR: Unsupported ICO asset: ${f}"
@@ -116,8 +123,34 @@ if [ -d "${CUSTOM_DATA_FOLDER}" ]; then
   done
 fi
 
+# Ensure all images are converted to the correct format
+echo "  > Converting all assets to the correct format ..."
+
+## FIXME: Detect if we need conversion at all and only convert if we do
+# Convert root folder images
+for f in "${DWIN_CUSTOM_FOLDER}"/*.jpg; do
+  if [ -f "${f}" ]; then
+    # echo "  > Converting ${f} ..."
+    convert "${f}" -strip -type TrueColor -density 0 "${f}"
+  fi
+done
+
+## FIXME: Detect if we need conversion at all and only convert if we do
+# Convert extracted ICO assets
+for d in "${DWIN_EXTRACTED_FOLDER}"/*; do
+  if [ -d "${d}" ]; then
+    # echo "  > Converting ${d} ICO assets ..."
+    for f in "${d}"/*.jpg; do
+      if [ -f "${f}" ]; then
+        # echo "  > Converting ${f} ..."
+        convert "${f}" -strip -type TrueColor -density 0 "${f}"
+      fi
+    done
+  fi
+done
+
 # Rebuild each .ICO file from the DWIN_SET folder
-for d in "${ICO_EXTRACTED_FOLDER}"/*; do
+for d in "${DWIN_EXTRACTED_FOLDER}"/*; do
   ICO_FILENAME="$(basename ${d}).ICO"
   echo "  > Rebuilding ${ICO_FILENAME} ..."
   python3 makeIco.py "${d}" "${DWIN_CUSTOM_FOLDER}/${ICO_FILENAME}" >/dev/null
@@ -126,7 +159,7 @@ if [ "${SKIP_REMOVE}" = "true" ]; then
   echo "  > Skipping removal of extracted .ICO files ..."
 else
   echo "  > Removing extracted .ICO files ..."
-  rm -fr "${ICO_EXTRACTED_FOLDER}"
+  rm -fr "${DWIN_EXTRACTED_FOLDER}"
 fi
 echo
 
