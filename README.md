@@ -1,4 +1,4 @@
-# dwin-ico-tools
+# dwin-ico-tools (Golang rewrite branch)
 
 **NOTICE**: _This is a fork of the original project, which simply aims to make the process of customizing your DWIN display easier._
 
